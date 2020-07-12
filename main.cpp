@@ -12,7 +12,7 @@ int main()
     bool condition = 0, exitCond = true;;
     char input[5];
     input[4] = '\0';
-    while(exitCond){
+    
      
     for (int i = 0; i < 4; i++) {
         do {
@@ -24,7 +24,7 @@ int main()
         } while (condition);
     } 
     cout << "I made a number!" << endl;
-    
+    while(exitCond){
     cout << "Input 4 digit:" << endl;
     condition = false;
     for (int i = 0; i < 4; i++) {
