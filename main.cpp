@@ -1,78 +1,99 @@
 #include <iostream>
-#include <random>
+#include <cstdlib>
 #include <ctime>
 #include <stdio.h>
 using namespace std;
- 
-int main()
-{ 
-    srand(time(NULL));
-    char arr[5];
-    arr[4] = '\0';
-    bool condition = 0, exitCond = true;;
-    char input[5];
-    input[4] = '\0';
-    
-     
-    for (int i = 0; i < 4; i++) {
-        do {
-            condition = false;
-            arr[i] = rand() % 10+'0';
-            for (int k = 0; k < i; k++) {
-                if (arr[k] == arr[i])condition = true;
-            }
-        } while (condition);
-    } 
-    cout << "I made a number!" << endl;
-    while(exitCond){
-    cout << "Input 4 digit:" << endl;
-    condition = false;
-    for (int i = 0; i < 4; i++) {
-        input[i] = getchar();
-        if (input[i] == '\n') {
-            input[i] = getchar();
-        }
-        if (input[i] >= '0' && input[i] <= '9') { 
-            for (int k = 0; k < i; k++) {
-                if (input[k] == input[i])condition = true;
-            }
-            if (condition) {
-                cout << "The digits must be different!" << endl;
-                while (getchar() != '\n');
-                i = 0;
-            }
-        }
-        else {
-            cout << "U need input digits, little dummy!" << endl;
-            while (getchar() != '\n');
-            i = 0;
-        }
-    }
-    condition = false;
-    int bulls=0, cows=0;
-    for (int i = 0; i < 4; i++) {
-        for (int k = 0; k < 4; k++) {
-            if (arr[i] == input[k]) {
-                if (i == k) {
-                    bulls++;
-                }
-                else {
-                    cows++;
-                }
-            }
-        }
-    }
-    cout << "here " << bulls << " bulls and " << cows << " cows" << endl;
-    if (bulls == 4) {
-        cout << "Congratulations! My number is: "<<arr<<"! Would you like to continue?(y/n)" << endl;
-        char tmpInp = getchar();
-        if (tmpInp == '\n') {
-            tmpInp = getchar();
-        }
-        if (tmpInp != 'y') {
-            exitCond = false;
-        }
-    }
-    }
-    return 0;
+int main() {
+	//параметры генерации
+	char generated[5] = { 0,0,0,0,0};//массив сгенерированных цифр, длинна 5, чтобы в конце поместился символ конца строки.
+	bool repeatGen = false;//условие перегенерации, для повторяющихся цифр
+	srand(time(NULL));//установка зерна(числа, на основе которого будет производится генерация случайного числа)
+	//конец параметров генерации
+
+	//параметры ввода
+	char input[5] = { 0,0,0,0,0 };//массив для пользовательского ввода, снова на один больше для символа конца строки.
+	bool repeatInput = true;//условие повтора ввода, если пользователь ввёл некорректные данные.
+	//конец параметров ввода
+
+	//Параметры кона
+	bool repeatCon = true;//условие для повторения кона игры
+	bool gameContinue = true; //условие для выхода из игры в случае победы.
+	//конец параметров кона
+
+	//параметры результата игрока
+	int bulls = 0, cows = 0;//количество быков и коров игрока.
+	//конец параметров игры
+
+	while (repeatCon) {//Пока игрок желает повторять кон, мы повторяем кон
+		//устанавливаем в начале каждого кона значения поумолчанию
+		repeatCon = false;
+		gameContinue = true;
+		bulls = 0;
+		cows = 0;
+
+		for (int i = 0; i < 4; i++) {//начало цикла генерации, генерируем 4 цифры.
+			do{//цикл с постусловием, чтобы сначала сгенерировать, а потом проверить и перегенерировать
+				repeatGen = false;//предполагаем, что будет сгенерировано правильное число, иначе мы будем постоянно крутится на месте
+				generated[i] = rand() % 10 + '0';//rand()%10 - генерирует цифры от 0 до 9, если к коду символа 0 добавить 1, то получится символ 1, потому что они идут подряд.
+			for (int k = 0; k < i; k++) {//цикл проверки, проверяющий только с предыдущими. Он проверяет от нуля до i не включая i
+				if (generated[i] == generated[k])repeatGen = true;//Если совпало, то мы ставим условие перегенерации
+			}
+			} while (repeatGen); //повторяем, если условие изменилось на true
+		}
+		cout << "I made a number! Guess it!" << endl; //Сообщаем игроку, что число сгенерировано и можно начинать играть.
+
+		while (gameContinue) {//начало цикла игры
+			bulls = 0;//обнуляем результаты игрока 
+			cows = 0;
+
+			cout << "Input 4 digit:" << endl;//просим ввести 4 цифры
+			for (int i = 0; i < 4; i++) {//цикл ввода 4 цифр
+				repeatInput = false;//сбрасываем повтор ввода, чтобы не войти в условие на 63 строке, если пользователь ввёл корректно всё.
+				while ((input[i] = getchar()) == '\n');//пока пользователь тыкает перевод строки, мы не заносим результат и не считаем это ошибкой.
+				if (input[i] < '0' || input[i] > '9') {//если введено то, что не попадает в промежуток от 0 до 9 включительно
+					cout << "You need input 4 digit, little dummy!" << endl;//сообщаем пользователю, что он маленький дурачок
+					while (getchar() != '\n');//считываем строку из буфера до конца(т.е. пока не считаем перевод строки)
+					i = -1;//сбрасываем счётчик ввода. Сбрасываем на -1, потому что после цикла будет инкремент и счётчик станет 1.
+				}
+				else {//если ввод верный, то мы проверяем, что введённая цифра не совпадает с предыдущими
+					for (int k = 0; k < i; k++) {
+						if (input[i] == input[k])repeatInput = true;//если есть совпадение, то мы говорим повторить ввод
+					} 
+				}
+				if (repeatInput == true) {//если ввод необходимо повторить
+					cout << "Digits must be different!" << endl;//сообщаем, что цифры должны быть различны
+					while (getchar() != '\n');//считываем строку до конца
+					i = -1;//сбрасываем счётчик ввода.
+				}
+			}
+			for (int i = 0; i < 4; i++) {//проход по вводу пользователя
+				for (int k = 0; k < 4; k++) {//проход по числу программы
+					if (input[i] == generated[k]) {//если цифра совпала
+						if (i == k) {//и позиция совпала, то быки увеличиваются
+							bulls++;
+						}
+						else {//иначе увеличиваются коровы
+							cows++;
+						}
+					}
+				}
+			}
+
+			if (bulls == 4) {//если игрок собрал 4 быков, то число угадано, поздравляем его и выходим из игры.
+				cout << "Congratulations! You guessed the number, it was like this:" << generated << endl;
+				gameContinue = false;
+			}
+			else {//иначе сообщаем ему его результаты и продолжаем играть
+				cout << "You have " << bulls << " bulls and " << cows <<" cows."<< endl;
+			}
+		}
+
+		cout << "Do you want repeat game?(y)" << endl;
+		while (getchar() != '\n');//считываем оставшиеся символы, пока не получим перевод строки.(считывание перевода строки очищает его же из буфера ввода)
+		repeatCon = false;//обнуляем повтор кона, предполагая, что игрок будет играть, пока ему не надоест.
+		if (getchar() == 'y')repeatCon = true;//getchar возвращает введённый символ, если символ будет отличаться от y, то repeatCon останется false
+		//и главный цикл игры завершится и мы перейдём к строке return 0;
+	}
+
+	return 0;
 }
